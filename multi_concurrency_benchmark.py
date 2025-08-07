@@ -33,7 +33,7 @@ class MultiConcurrencyBenchmark:
             'request_timeout': 30,      # 30s timeout
             'vllm_url': "http://localhost:8000/v1",
             'api_key': "test-key",
-            'model': "NousResearch/Meta-Llama-3.1-8B-Instruct"
+            'model': "meta-llama/Llama-3.1-8B-Instruct"
         }
     
     def get_gpu_info(self) -> Dict:
