@@ -703,8 +703,8 @@ if __name__ == "__main__":
                 request_timeout=30,
                 vllm_url="http://localhost:8000/v1",
                 api_key="your-api-key",
-                gpu_info={"model": "NVIDIA A100", "memory": "40GB"},
-                model="meta-llama/Llama-3.1-8B-Instruct,
+                gpu_info={"model": "NVIDIA L40S", "memory": "48GB"},
+                model="meta-llama/Llama-3.2-1B-Instruct,
                 output_file="benchmark_results.json"
             )
             logging.info("Benchmark completed successfully")
