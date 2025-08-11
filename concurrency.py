@@ -140,26 +140,6 @@ class SyntheticDatasetGenerator:
             {
                 "prompt": "Explain the concept of supply and demand in economics.",
                 "context": "Supply and demand is a fundamental concept in economics that describes how the price and quantity of a good or service in a market are determined through the interaction between buyers and sellers. The law of demand states that, all else being equal, as the price of a product increases, the quantity demanded by consumers decreases. This is typically represented by a downward-sloping demand curve. Conversely, the law of supply states that as the price of a product increases, the quantity that producers are willing to supply increases, represented by an upward-sloping supply curve. The point where these two curves intersect is called the equilibrium point, determining the market price and quantity. This model helps explain how prices fluctuate in response to changes in supply or demand. For instance, if demand increases while supply remains constant, prices will rise. If supply increases while demand remains constant, prices will fall. Understanding supply and demand is crucial for analyzing market behavior, predicting price changes, and formulating economic policies."
-            },
-            {
-                "prompt": "What are the key features of a democratic government?",
-                "context": "Democratic government is a system of governance based on the principle of rule by the people. While democracies can take various forms, they typically share several key features. First and foremost is the concept of free and fair elections, where citizens have the right to vote for their representatives at regular intervals. This is closely tied to the principle of political pluralism, allowing for multiple political parties and viewpoints to compete for power. The protection of individual rights and civil liberties, such as freedom of speech, press, and assembly, is another crucial aspect of democracy. Separation of powers is often implemented to prevent the concentration of power, typically dividing government into executive, legislative, and judicial branches that provide checks and balances on each other. The rule of law, ensuring that all citizens, including those in power, are equally subject to the law, is fundamental to democratic governance. Transparency and accountability in government operations, often facilitated by a free press and active civil society, help maintain democratic principles. Additionally, many democracies emphasize the protection of minority rights and the concept of majority rule with minority rights, aiming to balance the will of the majority with the fundamental rights of all citizens."
-            },
-            {
-                "prompt": "How do vaccines work to prevent diseases?",
-                "context": "Vaccines are one of the most effective tools in preventing infectious diseases, working by harnessing the body's own immune system. When a pathogen such as a virus or bacteria enters the body, the immune system responds by producing antibodies specific to that pathogen. These antibodies help neutralize or destroy the invader. Vaccines mimic this natural process by introducing a harmless form of the pathogen – either weakened, inactivated, or just a part of it – into the body. This stimulates the immune system to produce antibodies and memory cells specific to that pathogen, without causing the actual disease. If the vaccinated person later encounters the real pathogen, their immune system can quickly recognize it and mount a rapid and effective response, often preventing the disease entirely or reducing its severity. Some vaccines require multiple doses or periodic boosters to maintain immunity. The concept of herd immunity is also important in vaccination strategies: when a large portion of a population is vaccinated, it becomes difficult for the pathogen to spread, indirectly protecting those who cannot be vaccinated. Advances in vaccine technology, such as mRNA vaccines, are expanding our ability to rapidly develop vaccines for new threats."
-            },
-            {
-                "prompt": "What are the main theories of human evolution?",
-                "context": "Human evolution is the study of the biological and cultural development of our species, Homo sapiens, and our ancestors. The main scientific theory explaining human evolution is based on Darwin's theory of evolution by natural selection, adapted to incorporate modern genetic understanding. This theory proposes that humans evolved from earlier primate species over millions of years. Key ideas include the concept of common ancestry, suggesting that humans share a common ancestor with other primates, particularly the great apes. The 'Out of Africa' theory posits that modern humans originated in Africa and then migrated to other parts of the world. Fossil evidence has revealed a series of intermediate species, such as Australopithecus, Homo habilis, and Homo erectus, showing gradual changes in features like brain size, bipedalism, and tool use. Recent discoveries and genetic studies have complicated this picture, suggesting interbreeding between different human species (like Homo sapiens and Neanderthals) and the possibility of multiple migrations out of Africa. Ongoing research in paleontology, genetics, and archaeology continues to refine our understanding of human evolution, often challenging previous assumptions and revealing the complex history of our species."
-            },
-            {
-                "prompt": "Describe the process of plate tectonics and its effects on Earth.",
-                "context": "Plate tectonics is a fundamental theory in geology that explains the large-scale motions of Earth's lithosphere. The theory proposes that Earth's outer layer is divided into several large, rigid plates that move relative to one another. These plates float on the semi-fluid asthenosphere beneath them and are driven by convection currents in the mantle. Plate boundaries are classified into three types: divergent boundaries, where plates move apart and new crust is created; convergent boundaries, where plates collide, leading to subduction or mountain building; and transform boundaries, where plates slide past each other horizontally. The process of plate tectonics has profound effects on Earth's surface and internal structure. It is responsible for the formation of mountain ranges, ocean basins, and island arcs. It also plays a crucial role in the rock cycle, volcanic activity, and earthquake occurrence. Over geological time, plate tectonics has influenced climate patterns, ocean currents, and the distribution of flora and fauna across the globe. Understanding plate tectonics is essential for predicting geological hazards, explaining the distribution of natural resources, and comprehending Earth's long-term geological history."
-            },
-            {
-                "prompt": "What are the primary causes of biodiversity loss?",
-                "context": "Biodiversity loss, the decline in the variety of life forms on Earth, is a critical environmental issue with far-reaching consequences for ecosystems and human well-being. Several interconnected factors contribute to this loss. Habitat destruction and fragmentation, often due to human activities like deforestation, urbanization, and agricultural expansion, is a primary driver. Climate change is increasingly recognized as a major threat, altering ecosystems faster than many species can adapt. Overexploitation of natural resources, including overfishing and poaching, directly reduces populations of many species. Pollution, including chemical runoff, plastic waste, and air pollution, degrades habitats and harms wildlife. The introduction of invasive species, often facilitated by human activities, can disrupt local ecosystems and outcompete native species. Additionally, the spread of diseases, sometimes exacerbated by climate change and habitat stress, can devastate populations of certain species. These factors often interact and compound each other's effects, accelerating the rate of biodiversity loss. Addressing this crisis requires comprehensive conservation strategies, sustainable resource management, and global cooperation to mitigate human impacts on natural ecosystems."
             }
         ]
         
@@ -580,15 +560,26 @@ async def run_benchmark(
         # Generate requests for the measured test duration
         request_id = 0
         while time.time() - test_start_time < phase_duration:
-    # Sadece queue'da fazla request yoksa yeni ekle
-            if queue.qsize() < concurrency * 2:  # Reasonable limit
+            # Sadece queue'da fazla request yoksa yeni ekle
+            if queue.qsize() < concurrency * 3:  # Reasonable limit (increased)
                 await queue.put(request_id)
                 request_id += 1
+            
+            await asyncio.sleep(0.5)  # 500ms - much slower request rate
         
-            await asyncio.sleep(0.1)  # 100ms'ye çıkarın
-        
-        # Wait for all queued requests to complete
-        await queue.join()
+        # Wait for all queued requests to complete WITH TIMEOUT
+        try:
+            await asyncio.wait_for(queue.join(), timeout=120.0)  # Max 2 minutes wait
+            logging.info("All queued requests completed successfully")
+        except asyncio.TimeoutError:
+            logging.warning(f"Queue join timeout after 120 seconds. Remaining queue size: {queue.qsize()}")
+            # Queue'yu zorla temizle
+            while not queue.empty():
+                try:
+                    queue.get_nowait()
+                    queue.task_done()
+                except:
+                    break
         
         test_end_time = time.time()
         total_test_time = test_end_time - test_start_time
