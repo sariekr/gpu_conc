@@ -580,11 +580,12 @@ async def run_benchmark(
         # Generate requests for the measured test duration
         request_id = 0
         while time.time() - test_start_time < phase_duration:
+    # Sadece queue'da fazla request yoksa yeni ekle
+        if queue.qsize() < concurrency * 2:  # Reasonable limit
             await queue.put(request_id)
             request_id += 1
-            
-            # Small delay to control request rate
-            await asyncio.sleep(0.01)
+        
+        await asyncio.sleep(0.1)  # 100ms'ye çıkarın
         
         # Wait for all queued requests to complete
         await queue.join()
