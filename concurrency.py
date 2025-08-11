@@ -581,11 +581,11 @@ async def run_benchmark(
         request_id = 0
         while time.time() - test_start_time < phase_duration:
     # Sadece queue'da fazla request yoksa yeni ekle
-        if queue.qsize() < concurrency * 2:  # Reasonable limit
-            await queue.put(request_id)
-            request_id += 1
+            if queue.qsize() < concurrency * 2:  # Reasonable limit
+                await queue.put(request_id)
+                request_id += 1
         
-        await asyncio.sleep(0.1)  # 100ms'ye çıkarın
+            await asyncio.sleep(0.1)  # 100ms'ye çıkarın
         
         # Wait for all queued requests to complete
         await queue.join()
