@@ -58,15 +58,6 @@ class MultiConcurrencyBenchmark:
         
         return {"model": "Unknown GPU", "memory": "Unknown", "count": 1}
     
-    def check_vllm_server(self) -> bool:
-        """Check if vLLM server is running"""
-        try:
-            import requests
-            response = requests.get(f"{self.config['vllm_url'].replace('/v1', '')}/health", timeout=5)
-            return response.status_code == 200
-        except:
-            return False
-    
     async def run_single_benchmark(self, concurrency: int) -> Dict:
         """Run benchmark for a single concurrency level"""
         
@@ -224,14 +215,6 @@ class MultiConcurrencyBenchmark:
         print(f"🏁 Starting Multi-Level Concurrency Benchmark")
         print(f"📊 Testing {len(self.concurrency_levels)} concurrency levels")
         print(f"⏱️  Estimated duration: {len(self.concurrency_levels) * (self.config['phase_duration'] + self.config['ramp_up_duration'] + self.config['cool_down_duration']) / 60:.1f} minutes")
-        
-        # Check vLLM server
-        if not self.check_vllm_server():
-            print("❌ vLLM server not responding. Please start the server first:")
-            print("python -m vllm.entrypoints.openai.api_server --model NousResearch/Meta-Llama-3.1-8B-Instruct --port 8000 --api-key test-key")
-            return
-        
-        print("✅ vLLM server is running")
         
         # Run benchmarks
         for i, concurrency in enumerate(self.concurrency_levels, 1):

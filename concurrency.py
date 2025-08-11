@@ -321,27 +321,39 @@ class GPUMemoryMonitor:
 
 
 async def process_streaming_response(stream, request_metrics: RequestMetrics):
-    """
-    Process streaming response and collect metrics
+    """Process streaming response and collect metrics"""
+    collected_content = ""
+    reasoning_content = ""
     
-    Args:
-        stream: OpenAI streaming response
-        request_metrics: RequestMetrics object to populate
-    """
     try:
         async for chunk in stream:
             if hasattr(chunk, 'choices') and len(chunk.choices) > 0:
                 choice = chunk.choices[0]
+                
+                # Normal content
                 if hasattr(choice, 'delta') and choice.delta.content:
                     if request_metrics.first_token_time is None:
                         request_metrics.first_token_time = time.time()
+                    collected_content += choice.delta.content
+                    request_metrics.output_tokens += 1
+                
+                # Reasoning content (eğer varsa)
+                elif hasattr(choice, 'delta') and hasattr(choice.delta, 'reasoning_content') and choice.delta.reasoning_content:
+                    if request_metrics.first_token_time is None:
+                        request_metrics.first_token_time = time.time()
+                    reasoning_content += choice.delta.reasoning_content
                     request_metrics.output_tokens += 1
                 
                 if hasattr(choice, 'finish_reason') and choice.finish_reason is not None:
                     break
         
+        # Content kontrolü
+        total_content = collected_content + reasoning_content
+        if not total_content.strip():
+            logging.warning(f"Request {request_metrics.request_id}: No content generated!")
+        
         request_metrics.end_time = time.time()
-        request_metrics.success = True
+        request_metrics.success = bool(total_content.strip())  # Content varsa başarılı
         
     except Exception as e:
         request_metrics.end_time = time.time()
@@ -483,7 +495,7 @@ async def run_benchmark(
     vllm_url: str,
     api_key: str,
     gpu_info: Dict,
-    model: str = "NousResearch/Meta-Llama-3.1-8B-Instruct",
+    model: str = "openai/gpt-oss-20b",
     output_file: str = "benchmark_results.json"
 ) -> Dict:
     """
