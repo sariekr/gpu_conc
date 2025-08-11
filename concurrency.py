@@ -551,7 +551,21 @@ async def run_benchmark(
         
         # Clear results from warm-up period
         results.clear()
-        logging.info(f"Ramp-up completed. {warmup_requests} warm-up requests sent. Starting measured test phase...")
+        
+        # CRITICAL FIX: Clear the queue from pending warm-up requests
+        queue_size_before = queue.qsize()
+        cleared_count = 0
+        while not queue.empty():
+            try:
+                queue.get_nowait()
+                queue.task_done()
+                cleared_count += 1
+            except asyncio.QueueEmpty:
+                break
+        
+        logging.info(f"Ramp-up completed. {warmup_requests} warm-up requests sent.")
+        logging.info(f"Cleared {cleared_count} pending requests from queue.")
+        logging.info("Starting measured test phase with clean queue...")
         
         # Main test phase - THIS IS WHAT GETS MEASURED
         test_start_time = time.time()
@@ -560,8 +574,8 @@ async def run_benchmark(
         # Generate requests for the measured test duration
         request_id = 0
         while time.time() - test_start_time < phase_duration:
-            # Sadece queue'da fazla request yoksa yeni ekle
-            if queue.qsize() < concurrency * 3:  # Reasonable limit (increased)
+            # Only add requests if queue isn't overwhelmed
+            if queue.qsize() < concurrency * 3:  # Reasonable limit
                 await queue.put(request_id)
                 request_id += 1
             
@@ -573,7 +587,7 @@ async def run_benchmark(
             logging.info("All queued requests completed successfully")
         except asyncio.TimeoutError:
             logging.warning(f"Queue join timeout after 120 seconds. Remaining queue size: {queue.qsize()}")
-            # Queue'yu zorla temizle
+            # Force clear remaining queue
             while not queue.empty():
                 try:
                     queue.get_nowait()
