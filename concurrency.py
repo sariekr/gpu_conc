@@ -712,16 +712,16 @@ if __name__ == "__main__":
         
         try:
             results = await run_benchmark(
-                concurrency=10,
-                phase_duration=60,
-                ramp_up_duration=10,
-                cool_down_duration=5,
+                concurrency=1024,
+                phase_duration=180,
+                ramp_up_duration=30,
+                cool_down_duration=30,
                 input_tokens=1000,
-                output_tokens=100,
+                output_tokens=1000,
                 request_timeout=30,
                 vllm_url="http://localhost:8000/v1",
                 api_key="your-api-key",
-                gpu_info={"model": "NVIDIA L40S", "memory": "48GB"},
+                gpu_info={"model": "NVIDIA H100", "memory": "80GB"},
                 model="openai/gpt-oss-20b",
                 output_file="benchmark_results.json"
             )
