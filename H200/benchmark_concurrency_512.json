@@ -1,0 +1,38 @@
+{
+    "concurrency": 512,
+    "total_requests_sent": 473,
+    "successful_requests": 473,
+    "failed_requests": 0,
+    "response_rate": 1.0,
+    "test_duration_seconds": 186.77734875679016,
+    "system_output_throughput": 2368.3225131115837,
+    "requests_per_second": 2.5324269947525124,
+    "median_end_to_end_latency": 9442.396879196167,
+    "average_latency_per_request": 10003.735916811114,
+    "p95_end_to_end_latency": 14940.750551223753,
+    "p99_end_to_end_latency": 15257.084589004517,
+    "median_ttft": 72.47352600097656,
+    "average_ttft": 133.57067309776775,
+    "p95_ttft": 329.2870998382568,
+    "p99_ttft": 386.1390590667723,
+    "median_output_speed_per_query": 105.26910287173283,
+    "average_output_speed_per_query": 97.80694487804307,
+    "peak_memory_gb": 129.06658935546875,
+    "average_memory_gb": 129.06658935546875,
+    "gpu_info": {
+        "model": "NVIDIA H200",
+        "memory": "143771MB",
+        "count": 1
+    },
+    "model": "openai/gpt-oss-20b",
+    "test_config": {
+        "input_tokens": 1000,
+        "output_tokens": 1000,
+        "phase_duration": 180,
+        "request_timeout": 30
+    },
+    "error_summary": {
+        "timeout_errors": 0,
+        "other_errors": 0
+    }
+}
