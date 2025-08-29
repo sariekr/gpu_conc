@@ -1,0 +1,38 @@
+{
+    "concurrency": 8,
+    "total_requests_sent": 159,
+    "successful_requests": 159,
+    "failed_requests": 0,
+    "response_rate": 1.0,
+    "test_duration_seconds": 224.6744110584259,
+    "system_output_throughput": 681.1456599755077,
+    "requests_per_second": 0.7076907390163472,
+    "median_end_to_end_latency": 11731.171131134033,
+    "average_latency_per_request": 11391.163169213061,
+    "p95_end_to_end_latency": 11882.556366920471,
+    "p99_end_to_end_latency": 11903.11734199524,
+    "median_ttft": 93.4305191040039,
+    "average_ttft": 94.56772774270496,
+    "p95_ttft": 101.1237382888794,
+    "p99_ttft": 117.14756965637204,
+    "median_output_speed_per_query": 85.03584990791808,
+    "average_output_speed_per_query": 85.18878079171677,
+    "peak_memory_gb": 0.0,
+    "average_memory_gb": 0.0,
+    "gpu_info": {
+        "model": "Unknown GPU",
+        "memory": "Unknown",
+        "count": 1
+    },
+    "model": "openai/gpt-oss-20b",
+    "test_config": {
+        "input_tokens": 1000,
+        "output_tokens": 1000,
+        "phase_duration": 180,
+        "request_timeout": 30
+    },
+    "error_summary": {
+        "timeout_errors": 0,
+        "other_errors": 0
+    }
+}
