@@ -578,8 +578,8 @@ async def run_benchmark(
             if queue.qsize() < concurrency * 3:  # Reasonable limit
                 await queue.put(request_id)
                 request_id += 1
-            
-            await asyncio.sleep(0.5)  # 500ms - much slower request rate
+            else:
+                await asyncio.sleep(0)  # Yield to event loop when queue is full
         
         # Wait for all queued requests to complete WITH TIMEOUT
         try:
