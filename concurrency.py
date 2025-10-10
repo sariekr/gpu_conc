@@ -314,15 +314,22 @@ async def process_streaming_response(stream, request_metrics: RequestMetrics):
                 if hasattr(choice, 'delta') and choice.delta.content:
                     if request_metrics.first_token_time is None:
                         request_metrics.first_token_time = time.time()
-                    collected_content += choice.delta.content
-                    request_metrics.output_tokens += 1
-                
+                    content_chunk = choice.delta.content
+                    collected_content += content_chunk
+                    # Approximate token count: ~0.75 tokens per word
+                    # This is more accurate than assuming 1 token per chunk
+                    words = len(content_chunk.split())
+                    request_metrics.output_tokens += max(1, int(words * 0.75))
+
                 # Reasoning content (eğer varsa)
                 elif hasattr(choice, 'delta') and hasattr(choice.delta, 'reasoning_content') and choice.delta.reasoning_content:
                     if request_metrics.first_token_time is None:
                         request_metrics.first_token_time = time.time()
-                    reasoning_content += choice.delta.reasoning_content
-                    request_metrics.output_tokens += 1
+                    reasoning_chunk = choice.delta.reasoning_content
+                    reasoning_content += reasoning_chunk
+                    # Approximate token count for reasoning content
+                    words = len(reasoning_chunk.split())
+                    request_metrics.output_tokens += max(1, int(words * 0.75))
                 
                 if hasattr(choice, 'finish_reason') and choice.finish_reason is not None:
                     break
